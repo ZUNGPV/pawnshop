@@ -31,6 +31,7 @@ class City(models.Model):
         super(City, self).save(* args, **kwargs)
 
 class Customer(models.Model):
+    #id = models.IntegerField((primary_key=True)
     name_father_town = models.CharField(max_length=100, unique=True)
     name = models.ForeignKey(PersonName, related_name='+')
     father_or_husband_name = models.ForeignKey(PersonName, related_name='+')
@@ -51,6 +52,36 @@ class Customer(models.Model):
     def __unicode__(self):
         return "Name:" + str(self.name) + ", F/H Name: " + str(self.father_or_husband_name) + ", Town: " + str(self.town)
 
+class DailyBalanceSheet(models.Model):
+    date = models.DateField(default=datetime.datetime.now(), unique=True)
+    previous_balance = models.IntegerField(default=0)
+    credit = models.IntegerField(default=0)
+    pledged_principle = models.IntegerField(default=0)
+    redempted_advance_interest = models.IntegerField(default=0)
+    document_charges = models.IntegerField(default=0)
+    total_pledged_amount = models.IntegerField(default=0)
+    redempted_principle = models.IntegerField(default=0)
+    redempted_interest = models.IntegerField(default=0)
+    redempted_misc_charges = models.IntegerField(default=0)
+    total_redempted_amount = models.IntegerField(default=0)
+    misc_debit = models.IntegerField(default=0)
+    remarks = models.TextField(null=True, blank = True)
+    amount_in_hand = models.IntegerField(default=0)
+    
+    def save(self, *args, **kwargs):
+        self.total_pledged_amount = self.pledged_principle - self.redempted_advance_interest - self.document_charges
+        self.total_redempted_amount = self.redempted_principle + self.redempted_interest + self.redempted_misc_charges
+        self.amount_in_hand = self.previous_balance  + self.credit + self.total_redempted_amount - self.total_pledged_amount - self.misc_debit
+        
+        super(DailyBalanceSheet, self).save(* args, **kwargs)
+    
+    
+    class Meta:
+        ordering = ['-date']
+        
+    def __unicode__(self):
+        return str(self.date) + "-> Total_Pledged_Amount:" + str(self.total_pledged_amount) + ", Total_Redempted_Amount:" + str(self.total_redempted_amount) + ", Amount_In_Hand:" + str(self.amount_in_hand)
+    
 class Pledge(models.Model):
     STATUS_CHOICES = (
                       ('Open', 'Open'),
@@ -140,4 +171,4 @@ class Pledge(models.Model):
             
     def __unicode__(self):
         return "Ticket No:" + str(self.pledge_no) + ", Name:" + str(self.name) + ", Principle: " + str(self.principle)
-  
+

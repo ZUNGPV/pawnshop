@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ornament, PersonName, City
+from .models import Ornament, PersonName, City, DailyBalanceSheet
 # Register your models here.
 
 class OrnamentAdmin(admin.ModelAdmin):
